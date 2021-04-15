@@ -24,6 +24,7 @@ enum branch_direction ant_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    return NOT_TAKEN;
 }
 
 void ant_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -59,6 +60,7 @@ enum branch_direction at_branch_predictor_predict(struct branch_predictor *branc
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    return TAKEN;
 }
 
 void at_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
