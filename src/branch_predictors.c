@@ -96,6 +96,14 @@ enum branch_direction btfnt_branch_predictor_predict(struct branch_predictor *br
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    uint32_t lastAddress = *((uint32_t *)branch_predictor->data);
+    if (lastAddress == 0){
+        return NOT_TAKEN;
+    } else if (lastAddress < address){
+        return TAKEN;
+    } else {
+        return NOT_TAKEN;
+    }
 }
 
 void btfnt_branch_predictor_handle_result(struct branch_predictor *branch_predictor,
@@ -103,6 +111,7 @@ void btfnt_branch_predictor_handle_result(struct branch_predictor *branch_predic
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
+    *((uint32_t *)branch_predictor->data) = address;
 }
 
 void btfnt_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -119,6 +128,8 @@ struct branch_predictor *btfnt_branch_predictor_new(uint32_t num_branches,
     btfnt_bp->handle_result = &btfnt_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
+    btfnt_bp->data = calloc(1, sizeof(uint32_t));
+    *((uint32_t *)btfnt_bp->data) = 0;
 
     return btfnt_bp;
 }
