@@ -117,6 +117,7 @@ void btfnt_branch_predictor_handle_result(struct branch_predictor *branch_predic
 void btfnt_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
 {
     // TODO cleanup if necessary
+    free(branch_predictor->data);
 }
 
 struct branch_predictor *btfnt_branch_predictor_new(uint32_t num_branches,
@@ -142,8 +143,15 @@ enum branch_direction ltg_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
-    bool counter = *((bool *)branch_predictor->data);
-    if (counter){
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            break;
+        }
+        i++;
+    }
+    if (counter[i].target==0){
         return TAKEN;
     } else {
         return NOT_TAKEN;
@@ -155,16 +163,27 @@ void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
-    if (branch_direction == TAKEN){
-        *((uint32_t *)branch_predictor->data) = true;
-    } else {
-        *((uint32_t *)branch_predictor->data) = false;
+
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            if (branch_direction==TAKEN){
+                counter[i].target = 0;
+            } else {
+                counter[i].target = 1;
+            }
+            break;
+        }
+        i++;
     }
+
 }
 
 void ltg_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
 {
     // TODO cleanup if necessary
+    free(branch_predictor->data);
 }
 
 struct branch_predictor *ltg_branch_predictor_new(uint32_t num_branches,
@@ -176,9 +195,13 @@ struct branch_predictor *ltg_branch_predictor_new(uint32_t num_branches,
     ltg_bp->handle_result = &ltg_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-    ltg_bp->data = calloc(1, sizeof(bool));
-    *((uint32_t *)ltg_bp->data) = true;
-
+    // Pretend that target is the one bit counter rather than a uint32 (either 1 or 0)
+    ltg_bp->data = calloc(num_branches, sizeof(struct branch_metadata));
+    struct branch_metadata *counter = ((struct branch_metadata *)ltg_bp->data);
+    for (int i=0;i<num_branches;i++) {
+        counter[i].address = branch_metadatas[i].address;
+        counter[i].target = 0;
+    }
     return ltg_bp;
 }
 
@@ -190,6 +213,19 @@ enum branch_direction ltl_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            break;
+        }
+        i++;
+    }
+    if (counter[i].target==0){
+        return TAKEN;
+    } else {
+        return NOT_TAKEN;
+    }
 }
 
 void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -197,6 +233,19 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            if (branch_direction==TAKEN){
+                counter[i].target = 0;
+            } else {
+                counter[i].target = 1;
+            }
+            break;
+        }
+        i++;
+    }
 }
 
 void ltl_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -213,7 +262,12 @@ struct branch_predictor *ltl_branch_predictor_new(uint32_t num_branches,
     ltl_bp->handle_result = &ltl_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-
+    ltl_bp->data = calloc(num_branches, sizeof(struct branch_metadata));
+    struct branch_metadata *counter = ((struct branch_metadata *)ltl_bp->data);
+    for (int i=0;i<num_branches;i++) {
+        counter[i].address = branch_metadatas[i].address;
+        counter[i].target = 0;
+    }
     return ltl_bp;
 }
 
