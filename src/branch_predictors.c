@@ -238,8 +238,10 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     // given the most recent branch direction.
     struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
     int i=0;
+    bool backwards = (branch_predictor->lastAddress > address || branch_predictor->lastAddress==0);
     while (i<9999){
         if (counter[i].address == address){
+		if (backwards){i++; }
             if (branch_direction==TAKEN){
                 counter[i].target = 0;
             } else {
@@ -247,7 +249,7 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
             }
             break;
         }
-        i++;
+        i+=2;
     }
     branch_predictor->lastAddress = address;
 }
