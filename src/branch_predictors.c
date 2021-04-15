@@ -98,8 +98,8 @@ enum branch_direction btfnt_branch_predictor_predict(struct branch_predictor *br
     // given address.
     uint32_t lastAddress = *((uint32_t *)branch_predictor->data);
     if (lastAddress == 0){
-        return NOT_TAKEN;
-    } else if (lastAddress < address){
+        return TAKEN;
+    } else if (lastAddress > address){
         return TAKEN;
     } else {
         return NOT_TAKEN;
