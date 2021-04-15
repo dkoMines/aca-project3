@@ -314,6 +314,19 @@ enum branch_direction tbl_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            break;
+        }
+        i++;
+    }
+    if (counter[i].target >= 2){
+        return TAKEN;
+    } else {
+        return NOT_TAKEN;
+    }
 }
 
 void tbl_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -321,11 +334,31 @@ void tbl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
+    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
+    int i=0;
+    while (i<9999){
+        if (counter[i].address == address){
+            if (branch_direction==TAKEN){
+                counter[i].target += 1;
+                if (counter[i].target > 3){
+                    counter[i].target = 3;
+                }
+            } else {
+                counter[i].target -= 1;
+                if (counter[i].target < 0){
+                    counter[i].target = 0;
+                }
+            }
+            break;
+        }
+        i++;
+    }
 }
 
 void tbl_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
 {
     // TODO cleanup if necessary
+    free(branch_predictor->data);
 }
 
 struct branch_predictor *tbl_branch_predictor_new(uint32_t num_branches,
@@ -337,6 +370,11 @@ struct branch_predictor *tbl_branch_predictor_new(uint32_t num_branches,
     tbl_bp->handle_result = &tbl_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-
+    tbl_bp->data = calloc(num_branches, sizeof(struct branch_metadata));
+    struct branch_metadata *counter = ((struct branch_metadata *)tbl_bp->data);
+    for (int i=0;i<num_branches;i++) {
+        counter[i].address = branch_metadatas[i].address;
+        counter[i].target = 0;
+    }
     return tbl_bp;
 }
