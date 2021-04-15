@@ -96,13 +96,14 @@ enum branch_direction btfnt_branch_predictor_predict(struct branch_predictor *br
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
-    uint32_t lastAddress = *((uint32_t *)branch_predictor->data);
-    if (lastAddress == 0){
-        return TAKEN;
-    } else if (lastAddress > address){
-        return TAKEN;
-    } else {
-        return NOT_TAKEN;
+    struct branch_metadata *bt = ((struct branch_metadata *)branch_predictor->data);
+    for (int i=0;i<999;i++){
+        if (bt[i].address == address){
+            if (bt[i].target < address){
+                return TAKEN;
+            }
+            return NOT_TAKEN;
+        }
     }
 }
 
@@ -111,7 +112,6 @@ void btfnt_branch_predictor_handle_result(struct branch_predictor *branch_predic
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
-    *((uint32_t *)branch_predictor->data) = address;
 }
 
 void btfnt_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -129,9 +129,12 @@ struct branch_predictor *btfnt_branch_predictor_new(uint32_t num_branches,
     btfnt_bp->handle_result = &btfnt_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-    btfnt_bp->data = calloc(1, sizeof(uint32_t));
-    *((uint32_t *)btfnt_bp->data) = 0;
-
+    btfnt_bp->data = calloc(num_branches, sizeof(struct branch_metadata));
+    struct branch_metadata *md = ((struct branch_metadata *)btfnt_bp->data);
+    for (int i=0;i<branch_metadatas;i++){
+        md[i].address = branch_metadatas[i].address;
+        md[i].target = branch_metadatas[i].target;
+    }
     return btfnt_bp;
 }
 
