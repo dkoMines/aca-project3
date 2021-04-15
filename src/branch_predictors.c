@@ -142,6 +142,12 @@ enum branch_direction ltg_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    bool counter = *((bool *)branch_predictor->data);
+    if (counter){
+        return TAKEN;
+    } else {
+        return NOT_TAKEN;
+    }
 }
 
 void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -149,6 +155,11 @@ void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
+    if (branch_direction == TAKEN){
+        *((uint32_t *)branch_predictor->data) = true;
+    } else {
+        *((uint32_t *)branch_predictor->data) = false;
+    }
 }
 
 void ltg_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -165,6 +176,8 @@ struct branch_predictor *ltg_branch_predictor_new(uint32_t num_branches,
     ltg_bp->handle_result = &ltg_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
+    ltg_bp->data = calloc(1, sizeof(bool));
+    *((uint32_t *)ltg_bp->data) = true;
 
     return ltg_bp;
 }
