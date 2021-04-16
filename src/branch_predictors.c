@@ -131,7 +131,7 @@ struct branch_predictor *btfnt_branch_predictor_new(uint32_t num_branches,
     // TODO allocate storage for any data necessary for this branch predictor
     btfnt_bp->data = calloc(num_branches, sizeof(struct branch_metadata));
     struct branch_metadata *md = ((struct branch_metadata *)btfnt_bp->data);
-    for (int i=0;i<branch_metadatas;i++){
+    for (int i=0;i<num_branches;i++){
         md[i].address = branch_metadatas[i].address;
         md[i].target = branch_metadatas[i].target;
     }
