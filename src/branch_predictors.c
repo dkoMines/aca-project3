@@ -195,7 +195,7 @@ enum branch_direction ltl_branch_predictor_predict(struct branch_predictor *bran
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
     int *pht = ((int *)branch_predictor->data);
-    return (pht[17*(address&15) + 16 + 17*address&15]==0) ? NOT_TAKEN : TAKEN;
+    return (pht[16*(address&15) + pht[16*17-(address & 15)]]==0) ? NOT_TAKEN : TAKEN;
 
 
 
@@ -207,11 +207,11 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
     int *pht = ((int *)branch_predictor->data);
-    pht[17*(address&15) + pht[16 + 17*(address&15)]] = branch_direction;
-    int oldPtr = pht[16 + 17*(address&15)];
+    pht[16 * (address & 15) + pht[16*17-(address & 15)]] = branch_direction;
+    int oldPtr = pht[16*17-(address & 15)];
     oldPtr = oldPtr<<1;
     oldPtr = oldPtr & 15;
-    pht[16 + 17*(address&15)] = oldPtr + branch_direction;
+    pht[16*17-(address & 15)] = oldPtr + branch_direction;
 
 }
 
