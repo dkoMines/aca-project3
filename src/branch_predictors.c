@@ -213,6 +213,7 @@ enum branch_direction ltl_branch_predictor_predict(struct branch_predictor *bran
         return NOT_TAKEN;
     }
 
+
 }
 
 void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
