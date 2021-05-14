@@ -313,7 +313,7 @@ void tbl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
         if (newBD!=0) newBD -= 1;
     }
     if (newBD == 3) newBD -=1;
-    pht[16 * (address & 15) + pht[16*17-(address & 15)]] = newBD;
+    pht[16 * (address & 15) + pht[16*17-(address & 15)]] = newBD + branch_direction;
     int oldPtr = pht[16*17-(address & 15)];
     oldPtr = oldPtr<<1;
     oldPtr = oldPtr & 15;
