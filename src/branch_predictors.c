@@ -156,11 +156,11 @@ void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
     int *pht = ((int *)branch_predictor->data);
-    pht[pht[32]] = (branch_direction==NOT_TAKEN) ? 0 : 1;
+    pht[pht[32]] = branch_direction;
     int oldPtr = pht[32];
     oldPtr = oldPtr << 1; // shift bit
     oldPtr = oldPtr & 31;
-    pht[32] = oldPtr + (branch_direction==NOT_TAKEN) ? 0 : 1;
+    pht[32] = oldPtr + branch_direction;
 
 
 }
