@@ -195,7 +195,7 @@ enum branch_direction ltl_branch_predictor_predict(struct branch_predictor *bran
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
     int *pht = ((int *)branch_predictor->data);
-    return (pht[16*(address&15) + pht[16*16]]==0) ? NOT_TAKEN : TAKEN;
+    return (pht[17*(address&15) + 16 + 17*address&15]==0) ? NOT_TAKEN : TAKEN;
 
 
 
@@ -207,11 +207,11 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
     int *pht = ((int *)branch_predictor->data);
-    pht[16*(address&15) + pht[16*16]] = branch_direction;
-    int oldPtr = pht[16*16];
+    pht[17*(address&15) + pht[16 + 17*(address&15)]] = branch_direction;
+    int oldPtr = pht[16 + 17*(address&15)];
     oldPtr = oldPtr<<1;
     oldPtr = oldPtr & 15;
-    pht[16*16] = oldPtr + branch_direction;
+    pht[16 + 17*(address&15)] = oldPtr + branch_direction;
 
 }
 
@@ -229,9 +229,9 @@ struct branch_predictor *ltl_branch_predictor_new(uint32_t num_branches,
     ltl_bp->handle_result = &ltl_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-    ltl_bp->data = calloc(16*16+1,sizeof(int));
+    ltl_bp->data = calloc(16*17,sizeof(int));
     int *pht = ((int *)ltl_bp->data);
-    for (int i=0;i<16*16+1;i++){
+    for (int i=0;i<16*17;i++){
         pht[i] = 0;
     }
     return ltl_bp;
