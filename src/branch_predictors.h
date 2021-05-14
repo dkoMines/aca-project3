@@ -55,7 +55,7 @@ struct branch_predictor {
 
     // Use this pointer to store any data that the branch predictor needs.
     void *data;
-    uint32_t *lastAddress;
+    int tablePTR;
 };
 
 struct branch_predictor *ant_branch_predictor_new(uint32_t num_branches,
