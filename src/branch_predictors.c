@@ -159,10 +159,8 @@ void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     pht[pht[32]] = branch_direction;
     int oldPtr = pht[32];
     oldPtr = oldPtr << 1; // shift bit
-    oldPtr = oldPtr & 31;
+    oldPtr = oldPtr & 31; // bitwise op copy bit
     pht[32] = oldPtr + branch_direction;
-
-
 }
 
 void ltg_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -196,21 +194,9 @@ enum branch_direction ltl_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
-    bool backwards = (branch_predictor->lastAddress > address || branch_predictor->lastAddress==0);
-    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
-    int i=0;
-    while (i<9999){
-        if (counter[i].address == address){
-            break;
-        }
-        i += 2;
-    }
-    if (backwards){ i++; }
-    if (counter[i].target==0){
-        return TAKEN;
-    } else {
-        return NOT_TAKEN;
-    }
+    int *pht = ((int *)branch_predictor->data);
+    return (pht[16*(address&15) + pht[16*16+1]]==0) ? NOT_TAKEN : TAKEN;
+
 
 
 }
@@ -220,22 +206,13 @@ void ltl_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
-    struct branch_metadata *counter = ((struct branch_metadata *)branch_predictor->data);
-    int i=0;
-    bool backwards = (branch_predictor->lastAddress > address || branch_predictor->lastAddress==0);
-    while (i<9999){
-        if (counter[i].address == address){
-		if (backwards){i++; }
-            if (branch_direction==TAKEN){
-                counter[i].target = 0;
-            } else {
-                counter[i].target = 1;
-            }
-            break;
-        }
-        i+=2;
-    }
-    branch_predictor->lastAddress = address;
+    int *pht = ((int *)branch_predictor->data);
+    pht[16*(address&15) + pht[16*16+1]] = branch_direction;
+    int oldPtr = pht[16*16+1];
+    oldPtr = oldPtr<<1;
+    oldPtr = oldPtr & 15;
+    pht[16*16+1] = oldPtr + branch_direction;
+
 }
 
 void ltl_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -252,13 +229,11 @@ struct branch_predictor *ltl_branch_predictor_new(uint32_t num_branches,
     ltl_bp->handle_result = &ltl_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-    ltl_bp->data = calloc(num_branches*2, sizeof(struct branch_metadata));
-    struct branch_metadata *counter = ((struct branch_metadata *)ltl_bp->data);
-    for (int i=0;i<num_branches;i++) {
-        counter[i].address = branch_metadatas[i].address;
-        counter[i].target = 0;
+    ltl_bp->data = calloc(16*16+1,sizeof(int));
+    int *pht = ((int *)ltl_bp->data);
+    for (int i=0;i<16*16+1;i++){
+        pht[i] = 0;
     }
-    ltl_bp->lastAddress = 0;
     return ltl_bp;
 }
 
