@@ -245,6 +245,9 @@ enum branch_direction tbg_branch_predictor_predict(struct branch_predictor *bran
 {
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
+    int *pht = ((int *)branch_predictor->data);
+    return pht[pht[32]]<=1 ? NOT_TAKEN : TAKEN;
+
 }
 
 void tbg_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -252,6 +255,17 @@ void tbg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
 {
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
+    int *pht = ((int *)branch_predictor->data);
+    int newBD = pht[pht[32]];
+    if (branch_direction==NOT_TAKEN){
+        if (newBD!=0) newBD -= 1;
+    }
+    if (newBD == 3) newBD -=1;
+    pht[pht[32]] = newBD+branch_direction;
+    int oldPtr = pht[32];
+    oldPtr = oldPtr << 1; // shift bit
+    oldPtr = oldPtr & 31; // bitwise op copy bit
+    pht[32] = oldPtr + branch_direction;
 }
 
 void tbg_branch_predictor_cleanup(struct branch_predictor *branch_predictor)
@@ -268,7 +282,11 @@ struct branch_predictor *tbg_branch_predictor_new(uint32_t num_branches,
     tbg_bp->handle_result = &tbg_branch_predictor_handle_result;
 
     // TODO allocate storage for any data necessary for this branch predictor
-
+    tbg_bp->data = calloc(33,sizeof(int));
+    int *pht = ((int *)tbg_bp->data);
+    for (int i=0;i<33;i++){
+        pht[i] = 0;
+    }
     return tbg_bp;
 }
 
