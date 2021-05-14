@@ -147,7 +147,7 @@ enum branch_direction ltg_branch_predictor_predict(struct branch_predictor *bran
     // TODO: return this branch predictors prediction for the branch at the
     // given address.
     int *pht = ((int *)branch_predictor->data);
-    return pht[branch_predictor->tablePTR]==0 ? NOT_TAKEN : TAKEN;
+    return pht[branch_predictor->tablePTR[0]]==0 ? NOT_TAKEN : TAKEN;
 }
 
 void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predictor, uint32_t address,
@@ -156,7 +156,7 @@ void ltg_branch_predictor_handle_result(struct branch_predictor *branch_predicto
     // TODO: use this function to update the state of the branch predictor
     // given the most recent branch direction.
     int *pht = ((int *)branch_predictor->data);
-    pht[branch_predictor->tablePTR] = (branch_direction==NOT_TAKEN) ? 0 : 1;
+    pht[branch_predictor->tablePTR[0]] = (branch_direction==NOT_TAKEN) ? 0 : 1;
     int oldPtr = branch_predictor->tablePTR;
     oldPtr = oldPtr << 1; // shift bit
     oldPtr = oldPtr & 31;
